@@ -15,6 +15,19 @@ func Status(services []model.Service) {
 		fmt.Printf("CPU usage: %v%%\n", service.CPU)
 		fmt.Printf("Memory usage: %v%%\n", service.Memory)
 		fmt.Printf("Severity: %v\n", severity)
+
+		if !service.Healthy() {
+			service.Restart()
+			fmt.Println("Restarting...")
+			newSeverity := service.Severity()
+			severityMap[severity] -= 1
+			severityMap[newSeverity] += 1
+			fmt.Printf("Service: %v was restarted...\n", service.Name)
+			fmt.Printf("Restart count: %v\n", service.RestartCount)
+			fmt.Printf("CPU: %v%%\n", service.CPU)
+			fmt.Printf("Memory: %v%%\n", service.Memory)
+			fmt.Printf("Post restart severity: %v\n", newSeverity)
+		}
 	}
 
 	fmt.Println("\n-----SUMMARY--------")
