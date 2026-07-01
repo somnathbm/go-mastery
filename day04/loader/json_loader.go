@@ -29,7 +29,7 @@ func LoadServices() ([]model.Service, error) {
 
 	// sort the struct slices alphabetically
 	slices.SortFunc(data, func(a, b model.Service) int {
-		return cmp.Compare(a.ServiceName, b.ServiceName)
+		return cmp.Compare(a.Name, b.Name)
 	})
 	return data, nil
 }

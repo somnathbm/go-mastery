@@ -1,44 +1,53 @@
 package model
 
+import (
+	"day04/health"
+)
+
 type Service struct {
-	ServiceName  string `json:"name"`
+	Name         string `json:"name"`
 	CPU          int    `json:"cpu"`
 	Memory       int    `json:"memory"`
 	RestartCount int    `json:"restartcount"`
 }
 
-func (s Service) Name() string {
-	return s.ServiceName
-}
-
-func (s Service) Info() map[string]any {
-	return map[string]any{
-		"Name":   s.Name(),
-		"CPU":    s.CPU,
-		"Memory": s.Memory,
-	}
-}
-
 // Determines the severity of a service in terms of CPU or RAM usage
-func (s Service) Severity() string {
+func (s Service) Severity() health.Severity {
 	switch {
 	case s.CPU >= 90 || s.Memory >= 90:
-		return "CRITICAL"
+		return health.SeverityCritical
 	case s.CPU >= 80 || s.Memory >= 80:
-		return "WARNING"
+		return health.SeverityWarning
 	default:
-		return "NORMAL"
+		return health.SeverityNormal
 	}
 }
 
 // Determines if the service is healthy or unhealthy
-func (s Service) Healthy() bool {
-	return s.Severity() != "CRITICAL"
+func (s Service) Healthy() health.HealthStatus {
+	severity := s.Severity()
+	return health.HealthStatus{
+		Healthy:  severity != health.SeverityCritical,
+		Severity: severity,
+		Reason:   getReason(severity),
+	}
+}
+
+func getReason(s health.Severity) string {
+	switch s {
+	case health.SeverityCritical:
+		return "CPU or memory exceeded critical threshold"
+	case health.SeverityWarning:
+		return "CPU or memory exceeded warning threshold"
+	default:
+		return "Healthy"
+	}
 }
 
 // Restart service
-func (s *Service) Restart() {
-	s.RestartCount++
-	s.CPU = 0
-	s.Memory = 0
-}
+// func (s *Service) Restart() error {
+// 	s.RestartCount++
+// 	s.CPU = 0
+// 	s.Memory = 0
+// 	return nil
+// }

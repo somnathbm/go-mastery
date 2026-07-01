@@ -1,10 +1,13 @@
 package model
 
+import (
+	"day04/health"
+)
+
 type Database struct {
-	DBName       string
-	Connections  int
-	DiskUsage    int
-	RestartCount int
+	DBName      string
+	Connections int
+	DiskUsage   int
 }
 
 const (
@@ -12,35 +15,29 @@ const (
 	warningConnections = 80
 )
 
-func (d Database) Name() string {
-	return d.DBName
-}
-
-func (d Database) Info() map[string]any {
-	return map[string]any{
-		"DBName":    d.Name(),
-		"DiskUsage": d.DiskUsage,
-	}
-}
-
-func (d Database) Severity() string {
+func (d Database) Severity() health.Severity {
 	switch {
 	case d.DiskUsage >= 90 &&
 		d.Connections >= maxConnections:
-		return "CRITICAL"
+		return health.SeverityCritical
 	case d.DiskUsage >= 80 ||
 		d.Connections >= warningConnections:
-		return "WARNING"
+		return health.SeverityWarning
 	default:
-		return "NORMAL"
+		return health.SeverityNormal
 	}
 }
 
-func (d Database) Healthy() bool {
-	return d.Severity() != "CRITICAL"
+// Determines if the service is healthy or unhealthy
+func (d Database) Healthy() health.HealthStatus {
+	severity := d.Severity()
+	return health.HealthStatus{
+		Healthy:  severity != health.SeverityCritical,
+		Severity: severity,
+		Reason:   getReason(severity),
+	}
 }
 
-func (d *Database) Restart() {
-	d.RestartCount++
-	d.DiskUsage = 0
-}
+// func (d Database) Healthy() bool {
+// 	return d.Severity() != "CRITICAL"
+// }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"day04/contracts"
+	"day04/health"
 	"day04/loader"
 	"day04/monitor"
 	"day04/reporter"
@@ -10,14 +10,17 @@ import (
 
 func main() {
 	services, err := loader.LoadServices()
+	if err != nil {
+		log.Printf("Error: %v", err)
+	}
 	databases, err := loader.LoadDatabases()
 
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		log.Printf("Error: %v", err)
 	}
 
 	// resources
-	var resources []contracts.HealthChecker
+	var resources []health.HealthChecker
 
 	// iterate through resources
 	for i := range services {
