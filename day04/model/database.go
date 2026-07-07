@@ -37,7 +37,3 @@ func (d Database) Healthy() health.HealthStatus {
 		Reason:   getReason(severity),
 	}
 }
-
-// func (d Database) Healthy() bool {
-// 	return d.Severity() != "CRITICAL"
-// }
