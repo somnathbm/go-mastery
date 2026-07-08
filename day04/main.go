@@ -1,39 +1,36 @@
 package main
 
 import (
-	"day04/health"
 	"day04/loader"
-	"day04/monitor"
-	"day04/reporter"
 	"log"
 )
 
 func main() {
-	services, err := loader.LoadServices()
+	data, err := loader.LoadServices("data/services.json")
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Printf("Error: %T", err)
 	}
-	databases, err := loader.LoadDatabases()
+	// databases, err := loader.LoadDatabases()
 
-	if err != nil {
-		log.Printf("Error: %v", err)
-	}
+	// if err != nil {
+	// 	log.Printf("Error: %v", err)
+	// }
 
-	// resources
-	var resources []health.HealthChecker
+	// // resources
+	// var resources []health.HealthChecker
 
-	// iterate through resources
-	for i := range services {
-		resources = append(resources, &services[i])
-	}
+	// // iterate through resources
+	// for i := range services {
+	// 	resources = append(resources, &services[i])
+	// }
 
-	for i := range databases {
-		resources = append(resources, &databases[i])
-	}
+	// for i := range databases {
+	// 	resources = append(resources, &databases[i])
+	// }
 
-	// monitor services
-	monitor.Check(resources)
+	// // monitor services
+	// monitor.Check(resources)
 
-	// report services
-	reporter.Report(resources)
+	// // report services
+	// reporter.Report(resources)
 }

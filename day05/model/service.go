@@ -1,15 +1,20 @@
 package model
 
 import (
-	"day04/health"
-	"day04/utils"
+	"day05/health"
+	"day05/utils"
+	"time"
 )
 
 type Service struct {
-	Name         string `json:"name"`
+	SName        string `json:"name"`
 	CPU          int    `json:"cpu"`
 	Memory       int    `json:"memory"`
 	RestartCount int    `json:"restartcount"`
+}
+
+func (s Service) Name() string {
+	return s.SName
 }
 
 // Determines the severity of a service in terms of CPU or RAM usage
@@ -26,8 +31,11 @@ func (s Service) Severity() health.Severity {
 
 // Determines if the service is healthy or unhealthy
 func (s Service) Healthy() health.HealthStatus {
+	time.Sleep(2 * time.Second)
+
 	severity := s.Severity()
 	return health.HealthStatus{
+		Name:     s.Name(),
 		Healthy:  severity != health.SeverityCritical,
 		Severity: severity,
 		Reason:   utils.GetReason(severity),

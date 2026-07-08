@@ -1,8 +1,9 @@
 package model
 
 import (
-	"day04/health"
-	"day04/utils"
+	"day05/health"
+	"day05/utils"
+	"time"
 )
 
 type Database struct {
@@ -15,6 +16,10 @@ const (
 	maxConnections     = 100
 	warningConnections = 80
 )
+
+func (d Database) Name() string {
+	return d.DBName
+}
 
 func (d Database) Severity() health.Severity {
 	switch {
@@ -31,8 +36,11 @@ func (d Database) Severity() health.Severity {
 
 // Determines if the service is healthy or unhealthy
 func (d Database) Healthy() health.HealthStatus {
+	time.Sleep(5 * time.Second)
+
 	severity := d.Severity()
 	return health.HealthStatus{
+		Name:     d.Name(),
 		Healthy:  severity != health.SeverityCritical,
 		Severity: severity,
 		Reason:   utils.GetReason(severity),
