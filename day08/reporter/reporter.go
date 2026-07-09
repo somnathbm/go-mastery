@@ -11,3 +11,17 @@ func Report(statusChn <-chan health.HealthStatus) {
 		fmt.Printf("Resource: %v, Status: %v, Severity: %v, Reason: %v\n", status.Name, status.Healthy, status.Severity, status.Reason)
 	}
 }
+
+// for {
+// 	select {
+// 	case <-ctx.Done():
+// 		return
+// 	case status, ok := <-statusChn:
+// 		if !ok {
+// 			return
+// 		}
+// 		fmt.Println("-----------------")
+// 		fmt.Printf("Resource: %v, Status: %v, Severity: %v, Reason: %v\n", status.Name, status.Healthy, status.Severity, status.Reason)
+// 	}
+// }
+// }

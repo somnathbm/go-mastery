@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"context"
 	"day08/health"
 	"sync"
 )
@@ -11,14 +12,22 @@ const WorkerPoolSize = 100
 const ChannelCapacity = 1000
 
 // Consumer code
-func checkWorker(resourceCh <-chan health.HealthChecker, resultsCh chan<- health.HealthStatus) {
-	for resource := range resourceCh {
-		resultsCh <- resource.Healthy()
+func checkWorker(ctx context.Context, resourceCh <-chan health.HealthChecker, resultsCh chan<- health.HealthStatus) {
+	for {
+		select {
+		case resource, ok := <-resourceCh:
+			if !ok {
+				return
+			}
+			resultsCh <- resource.Healthy()
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
 // Driver code
-func CheckResources(resources []health.HealthChecker) <-chan health.HealthStatus {
+func CheckResources(ctx context.Context, resources []health.HealthChecker) <-chan health.HealthStatus {
 	// 1. Setup
 	resourceCh := make(chan health.HealthChecker, ChannelCapacity)
 	resultsCh := make(chan health.HealthStatus, ChannelCapacity)
@@ -29,7 +38,7 @@ func CheckResources(resources []health.HealthChecker) <-chan health.HealthStatus
 	for i := 1; i <= WorkerPoolSize; i++ {
 		wg.Go(func() {
 			// call worker code
-			checkWorker(resourceCh, resultsCh)
+			checkWorker(ctx, resourceCh, resultsCh)
 		})
 	}
 
@@ -41,11 +50,15 @@ func CheckResources(resources []health.HealthChecker) <-chan health.HealthStatus
 
 	// 4. Producer code
 	go func() {
-		for _, resource := range resources {
-			resourceCh <- resource
-		}
-		close(resourceCh)
-	}()
+		defer close(resourceCh)
 
+		for _, resource := range resources {
+			select {
+			case <-ctx.Done():
+				return
+			case resourceCh <- resource:
+			}
+		}
+	}()
 	return resultsCh
 }

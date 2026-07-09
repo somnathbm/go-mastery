@@ -3,7 +3,6 @@ package model
 import (
 	"day08/health"
 	"day08/utils"
-	"time"
 )
 
 type Database struct {
@@ -36,7 +35,6 @@ func (d Database) Severity() health.Severity {
 
 // Determines if the service is healthy or unhealthy
 func (d Database) Healthy() health.HealthStatus {
-	time.Sleep(5 * time.Second)
 
 	severity := d.Severity()
 	return health.HealthStatus{
