@@ -34,7 +34,7 @@ func (d Database) Severity() health.Severity {
 }
 
 // Determines if the service is healthy or unhealthy
-func (d Database) Healthy() health.HealthStatus {
+func (d Database) CheckHealth() (health.HealthStatus, error) {
 
 	severity := d.Severity()
 	return health.HealthStatus{
@@ -42,5 +42,5 @@ func (d Database) Healthy() health.HealthStatus {
 		Healthy:  severity != health.SeverityCritical,
 		Severity: severity,
 		Reason:   utils.GetReason(severity),
-	}
+	}, nil
 }

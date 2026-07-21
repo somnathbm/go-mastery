@@ -3,6 +3,7 @@ package model
 import (
 	"day09/health"
 	"day09/utils"
+	"errors"
 )
 
 type Service struct {
@@ -29,15 +30,24 @@ func (s Service) Severity() health.Severity {
 }
 
 // Determines if the service is healthy or unhealthy
-func (s Service) Healthy() health.HealthStatus {
-
+func (s Service) CheckHealth() (health.HealthStatus, error) {
 	severity := s.Severity()
+
+	// simulate a health check failure
+	if s.Name() == "order-service" {
+		return health.HealthStatus{
+			Name:     s.Name(),
+			Healthy:  false,
+			Severity: severity,
+		}, errors.New("order-service transient failure")
+	}
+
 	return health.HealthStatus{
 		Name:     s.Name(),
 		Healthy:  severity != health.SeverityCritical,
 		Severity: severity,
 		Reason:   utils.GetReason(severity),
-	}
+	}, nil
 }
 
 // Restart service

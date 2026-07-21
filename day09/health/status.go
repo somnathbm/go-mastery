@@ -1,5 +1,7 @@
 package health
 
+import "time"
+
 type Severity string
 
 const (
@@ -9,15 +11,16 @@ const (
 )
 
 type HealthStatus struct {
-	Name     string
-	Healthy  bool
-	Severity Severity
-	Reason   string
+	Name         string
+	Healthy      bool
+	Severity     Severity
+	Reason       string
+	ResponseTime time.Duration
 }
 
 type HealthChecker interface {
 	Name() string
-	Healthy() HealthStatus
+	CheckHealth() (HealthStatus, error)
 }
 
 type Restartable interface {

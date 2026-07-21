@@ -5,31 +5,57 @@ import (
 	"day09/health"
 	"day09/metrics"
 	"sync"
+	"time"
 )
 
 type Monitor struct{}
 
 const WorkerPoolSize = 100
 const ChannelCapacity = 1000
+const RetryCount = 3
 
 var myMetrics metrics.Metrics
 
 // Consumer code
 func checkWorker(ctx context.Context, resourceCh <-chan health.HealthChecker, resultsCh chan<- health.HealthStatus) {
 	for {
+		start := time.Now()
 		select {
 		case resource, ok := <-resourceCh:
 			if !ok {
 				return
 			}
 
-			status := resource.Healthy()
+			status := retryWith(resource)
+			end := time.Since(start)
+			status.ResponseTime = end
 			// myMetrics.Increment(status.Severity)
+
 			resultsCh <- status
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+func retryWith(resource health.HealthChecker) health.HealthStatus {
+	var hStatus health.HealthStatus
+
+	for i := 1; i <= RetryCount; i++ {
+		status, err := resource.CheckHealth()
+
+		// if healthcheck SUCCEEDS, no retry, immediately return the status
+		if err == nil {
+			hStatus = status
+			break
+		}
+
+		// if healthcheck FAILS, keep retrying and set the reason & return the status
+		hStatus = status
+		// set the reason here
+		hStatus.Reason = err.Error()
+	}
+	return hStatus
 }
 
 // Driver code
