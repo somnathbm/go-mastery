@@ -4,7 +4,7 @@ import (
 	"context"
 	"day09/health"
 	"day09/metrics"
-	"sync"
+	"day09/workerpool"
 	"time"
 )
 
@@ -61,37 +61,48 @@ func retryWith(resource health.HealthChecker) health.HealthStatus {
 // Driver code
 func CheckResources(ctx context.Context, resources []health.HealthChecker) <-chan health.HealthStatus {
 	// 1. Setup
-	resourceCh := make(chan health.HealthChecker, ChannelCapacity)
-	resultsCh := make(chan health.HealthStatus, ChannelCapacity)
+	jobsCh := make(chan health.HealthChecker, ChannelCapacity)
+	// resultsCh := make(chan health.HealthStatus, ChannelCapacity)
 
-	var wg sync.WaitGroup
+	// var wg sync.WaitGroup
 
-	// 2. Worker pool
-	for i := 1; i <= WorkerPoolSize; i++ {
-		wg.Go(func() {
-			// call worker code
-			checkWorker(ctx, resourceCh, resultsCh)
-		})
-	}
+	// // 2. Worker pool
+	// for i := 1; i <= WorkerPoolSize; i++ {
+	// 	wg.Go(func() {
+	// 		// call worker code
+	// 		checkWorker(ctx, jobsCh, resultsCh)
+	// 	})
+	// }
 
-	// 3. Co-ordinator block for synchronization
-	go func() {
-		wg.Wait()
-		close(resultsCh)
-	}()
+	// // 3. Co-ordinator block for synchronization
+	// go func() {
+	// 	wg.Wait()
+	// 	close(resultsCh)
+	// }()
+
+	resultsCh := workerpool.Run(ctx, jobsCh, processResource)
 
 	// 4. Producer code
 	go func() {
-		defer close(resourceCh)
+		defer close(jobsCh)
 
 		for _, resource := range resources {
 			select {
 			case <-ctx.Done():
 				return
-			case resourceCh <- resource:
+			case jobsCh <- resource:
 			}
 		}
 	}()
 
 	return resultsCh
+}
+
+// job function
+func processResource(resource health.HealthChecker) health.HealthStatus {
+	status, err := resource.CheckHealth()
+	if err != nil {
+		// deal with it
+	}
+	return status
 }
